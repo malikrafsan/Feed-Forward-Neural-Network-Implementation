@@ -7,19 +7,22 @@ class Neuron(object):
     def __init__(
         self,
         activation: Callable | str = 'sigmoid',
-        weight: float | int = 0,
+        weights: list[float] = None,
     ):
         self.activation = activation
         if isinstance(activation, str):
             self.activation: Callable = getattr(activations, activation)
-        self.weight = weight
+        self.weights = weights
+        self.value = 0
 
-    def __call__(self, x) -> None:
+    def __call__(self, x: list[float]):
         # feed forward
-        pass
+        val = np.dot(x, self.weights)
+        self.value = self.activation(val)
+        return self.value
 
     def __repr__(self):
-        return f'Neuron({self.activation.__name__}, {self.weight})'
+        return f'Neuron({self.activation.__name__}, {self.weights})'
 
 
 class Layer(object):
@@ -28,8 +31,8 @@ class Layer(object):
         neurons: list[Neuron] | int,
         name: str = '',
         activation: Callable | str = '',
-        weights: list[float] = None,
-        bias: Neuron | float | int = 0,
+        weights: list[list[float]] = None,
+        bias: float = 1,
         input_shape=0,
     ) -> None:
         self.name = name
@@ -43,8 +46,6 @@ class Layer(object):
                 for i in range(neurons)
             ]
         self.bias = bias
-        if isinstance(bias, (float, int)):
-            self.bias = Neuron(activation, bias)
         self.input_shape = input_shape
 
     def get_output_shape(self):
@@ -54,11 +55,12 @@ class Layer(object):
         return (len(self.neurons) + 1) * self.input_shape
 
     def get_weights(self):
-        return np.array([neuron.weight for neuron in self.neurons])
+        return np.array([neuron.weights for neuron in self.neurons])
 
-    def __call__(self, inputs) -> None:
+    def __call__(self, inputs: list[float]) -> list[float]:
         # feed forward
-        pass
+        out = [neuron(inputs) for neuron in self.neurons]
+        return out
 
     def __repr__(self):
         activation_name = self.activation.__name__
@@ -69,7 +71,7 @@ class Layer(object):
             'Layer(',
             f'activation={activation_name},',
             f'weights={weights},',
-            f'bias={self.bias.weight},',
+            f'bias={self.bias},',
             f'param_count={param_count}',
             ')',
         ])
@@ -94,6 +96,15 @@ class Model(object):
         for layer in self.layers:
             print(layer)
 
+    def __call__(self, inputs: list[list[float]]):
+        # feed forward
+        for input in inputs:
+            out = input
+            for layer in self.layers:
+                out.append(1)
+                out = layer(out)
+        
+        return out
 
 if __name__ == '__main__':
     model = Model()
