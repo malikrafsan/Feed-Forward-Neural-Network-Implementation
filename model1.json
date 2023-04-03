@@ -1,0 +1,14 @@
+[
+    {
+        "neurons": 2,
+        "activation": "sigmoid",
+        "weights": [[0.15, 0.2, 0.35], [0.25, 0.3, 0.35]],
+        "bias": 1
+    },
+    {
+        "neurons": 2,
+        "activation": "sigmoid",
+        "weights": [[0.4, 0.45, 0.6], [0.5, 0.55, 0.6]],
+        "bias": 1
+    }
+]
