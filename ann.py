@@ -61,7 +61,7 @@ class Layer(object):
         # feed forward
         out = [neuron(inputs) for neuron in self.neurons]
         if self.activation is activations.softmax:
-            out /= sum(out)
+            out = (out / sum(out)).tolist()
         return out
 
     def __repr__(self):
@@ -100,13 +100,15 @@ class Model(object):
 
     def __call__(self, inputs: list[list[float]]):
         # feed forward
+        outputs: list[list[float]] = []
         for input in inputs:
             out = input
             for layer in self.layers:
                 out.append(1)
                 out = layer(out)
+            outputs.append(out)
         
-        return out
+        return outputs
 
 if __name__ == '__main__':
     model = Model()
