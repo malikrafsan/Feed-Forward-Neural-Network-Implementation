@@ -60,6 +60,8 @@ class Layer(object):
     def __call__(self, inputs: list[float]) -> list[float]:
         # feed forward
         out = [neuron(inputs) for neuron in self.neurons]
+        if self.activation is activations.softmax:
+            out /= sum(out)
         return out
 
     def __repr__(self):
