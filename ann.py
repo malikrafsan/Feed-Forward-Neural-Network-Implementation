@@ -100,17 +100,13 @@ class Model(object):
 
     def __call__(self, inputs: list[list[float]]):
         # feed forward
-        outputs: list[str] = [] 
         for input in inputs:
             out = input
-            print(out)
             for layer in self.layers:
                 out.append(1)
                 out = layer(out)
-                print(out)
-            outputs.append(out)
         
-        return outputs
+        return out
 
 if __name__ == '__main__':
     model = Model()
