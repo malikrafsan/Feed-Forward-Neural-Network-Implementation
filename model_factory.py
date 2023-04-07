@@ -2,7 +2,7 @@ from json_reader import JsonReader
 from ann import Model, Layer
 
 class ModelFactory:
-    def __init__(self, model_name):
+    def __init__(self, model_name: str):
         self.model_name = model_name
         self.json_reader = JsonReader(f'{model_name}.json')
         self.model = None
@@ -14,7 +14,7 @@ class ModelFactory:
             layer = self.json_reader.get(i)
             self.model.add(Layer(
                 layer['neurons'],
-                input_shape=layer['neurons'] + 1,
+                input_shape=layer.get('input_shape'),
                 activation=layer['activation'],
                 weights=layer['weights'],
                 bias=layer['bias'],

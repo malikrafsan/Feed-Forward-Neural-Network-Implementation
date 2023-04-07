@@ -52,7 +52,7 @@ class Layer(object):
         return len(self.neurons)
 
     def get_params_count(self):
-        return (len(self.neurons) + 1) * self.input_shape
+        return (self.input_shape + 1) * len(self.neurons) 
 
     def get_weights(self):
         return np.array([neuron.weights for neuron in self.neurons])
@@ -67,7 +67,7 @@ class Layer(object):
     def __repr__(self):
         activation_name = self.activation.__name__
         weights = self.get_weights()
-        param_count = (len(weights) + 1) * self.input_shape
+        param_count = self.get_params_count()
 
         return ''.join([
             'Layer(',

@@ -11,6 +11,6 @@ if __name__ == '__main__':
     model = model_factory.create()
     model.summary()
 
-    data = [[1.0, 2.0]]
+    data = [[1.0, 2.0], [3.0, 4.0]]
     trained = model(data)
     print(trained)

@@ -1,5 +1,6 @@
 [
     {
+        "input_shape": 2,
         "neurons": 3,
         "activation": "sigmoid",
         "weights": [
