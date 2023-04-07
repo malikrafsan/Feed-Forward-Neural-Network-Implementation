@@ -10,6 +10,7 @@ if __name__ == '__main__':
     model_factory = ModelFactory(model_name)
     model = model_factory.create()
     model.summary()
+    model.draw()
 
     data = [[1.0, 2.0]]
     trained = model(data)

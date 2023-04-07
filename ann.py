@@ -1,6 +1,8 @@
 import numpy as np
 from typing import Callable
 import activations
+import networkx as nx
+import matplotlib.pyplot as plt
 
 
 class Neuron(object):
@@ -109,6 +111,34 @@ class Model(object):
             outputs.append(out)
         
         return outputs
+    
+    def draw(self):
+        graph = nx.DiGraph()
+
+        # draw input layer
+        num_neurons = len(self.layers[0].neurons[0].weights) -1
+        print("num_neurons", num_neurons)
+
+        for i in range(num_neurons):
+            graph.add_node(f"-1-{i}", pos=(-1, i))
+
+        for i, layer in enumerate(self.layers):
+            for j, neuron in enumerate(layer.neurons):
+                count = 0
+
+                graph.add_node(f"{i}-{j}", pos=(i, j))
+                print("neuron.weights",)
+                for k, weight in enumerate(neuron.weights):
+                    graph.add_edge(f"{i-1}-{k}", f"{i}-{j}", weight=weight)
+                    count += 1
+                graph.add_edge(f"{i-1}-{count}", f"{i}-{j}", weight=layer.bias)
+
+        pos = nx.get_node_attributes(graph, 'pos')
+        nx.draw(graph, pos, with_labels=True)
+        edge_labels = nx.get_edge_attributes(graph, 'weight')
+        nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels)
+        plt.show()
+
 
 if __name__ == '__main__':
     model = Model()
