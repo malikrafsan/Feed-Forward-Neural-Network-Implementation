@@ -124,11 +124,11 @@ class Layer(object):
         for neuron in self.neurons:
             neuron.reset_delta_weights()
 
-    def calc(self, type: LayerType, prev_values: list[float], learning_rate: float, expected: float = -1, next_neurons: list[Neuron] = None):
+    def calc(self, type: LayerType, prev_values: list[float], learning_rate: float, expected: list[float] = [], next_neurons: list[Neuron] = None):
         if (type == LayerType.OUTPUT):
             for j in range(len(self.neurons)):
                 neuron = self.neurons[j]
-                neuron.delta_err = self.delta_func(expected, neuron.value)
+                neuron.delta_err = self.delta_func(expected[j], neuron.value)
                 for k, _ in enumerate(neuron.delta_weights): # TODO: RECHECK
                     neuron.delta_weights[k] += -learning_rate * neuron.delta_err * prev_values[k]
         elif (type == LayerType.HIDDEN):
@@ -224,7 +224,7 @@ class Model(object):
         else:
             return self.layers[idx-1].get_values() + [bias]
 
-    def propagate(self, inputs: list[float], expected: float, learning_rate: float):
+    def propagate(self, inputs: list[float], expected: list[float], learning_rate: float):
         _ = self.single_predict(inputs)
 
         num = len(self.layers)
@@ -249,7 +249,7 @@ class Model(object):
         for layer in self.layers:
             layer.reset_delta_weights()
 
-    def multi_propagates(self, inputs: list[list[float]], expected: list[float], learning_rate: float):
+    def multi_propagates(self, inputs: list[list[float]], expected: list[list[float]], learning_rate: float):
         num = len(inputs)
         for i in range(num):
             self.propagate(inputs[i], expected[i], learning_rate)
@@ -261,18 +261,19 @@ class Model(object):
             layer = self.layers[i]
             layer.update_weights(batch_size)
 
-    def calc_total_err(self, inputs: list[list[float]], expected: list[float]):
+    def calc_total_err(self, inputs: list[list[float]], expected: list[list[float]]):
         res = self(inputs)
         # print(res)
         total_err = 0
         for i in range(len(res)):
-            total_err += 0.5 * (res[i][0] - expected[i]) ** 2
+            for j in range(len(res[i])):
+                total_err += (res[i][j] - expected[i][j]) ** 2
         return total_err
 
     def fit(
         self, 
         inputs: list[list[float]], 
-        expected: list[float],
+        expected: list[list[float]],
         learning_rate: float = 0.1,
         batch_size: int = 10,
         max_iterations: int = 100,
