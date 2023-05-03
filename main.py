@@ -1,6 +1,14 @@
 from model_factory import ModelFactory
 import sys
 
+from sklearn import datasets
+import pandas as pd
+
+iris = datasets.load_iris()
+x = iris.data
+y = iris.target
+
+
 if __name__ == '__main__':
     if (len(sys.argv) > 1):
         model_name = sys.argv[1]
@@ -12,5 +20,11 @@ if __name__ == '__main__':
     model.summary()
 
     data = [[1.0, 2.0], [3.0, 4.0]]
-    trained = model(data)
-    print(trained)
+    # trained = model(data)
+    # print(trained)
+
+    stopReason = model.fit(x, y, max_iterations=100, learning_rate=0.2)
+    model.summary()
+    print(stopReason)
+    print(y)
+    # print(y)
