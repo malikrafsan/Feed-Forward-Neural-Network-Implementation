@@ -1,16 +1,10 @@
 from json_reader import JsonReader
 from ann import Model, Layer
+from model_types import ModelConfig
 
 class ModelFactory:
-    def __init__(self, model_name: str):
-        self.model_name = model_name
-        self.json_reader = JsonReader(f'{model_name}')
-        self.model = None
-
-    def create(self) -> Model:
-        self.json_reader.read()
-        case = self.json_reader.get("case")
-        print(case)
+    def build(self, model_config: ModelConfig) -> Model:
+        case = model_config["case"]
         learning_parameters = case["learning_parameters"]
         self.model = Model(
             learning_rate=learning_parameters["learning_rate"],

@@ -1,4 +1,6 @@
 from model_factory import ModelFactory
+from json_parser import JsonParser
+from model_types import ModelConfig
 import sys
 
 from sklearn import datasets
@@ -11,32 +13,17 @@ y = iris.target
 
 if __name__ == '__main__':
     if (len(sys.argv) > 1):
-        model_name = sys.argv[1]
+        json_path = sys.argv[1]
     else:
-        model_name = 'model1'
+        json_path = 'model1.json'
 
-    model_factory = ModelFactory(model_name)
-    model = model_factory.create()
+    model_config: ModelConfig = JsonParser().parse_model_config(json_path)
+    model = ModelFactory().build(model_config)
+
     model.summary()
 
-    data = [
-            [0.0, 0.0],
-            [0.0, 0.1],
-		[1.0, 0.0],
-		[1.0, 1.0]
-        ]
-
-    # data = [[0.0]]
-
-    target = [
-            [0.1, 1.0],
-            [1.0, 0.0],
-		[1.0, 1.0],
-		[0.0, 0.0]
-        ]
-    # target = [
-    #     [0.0, 1.0]
-    # ]
+    data = model_config['case']['input']
+    target = model_config['case']['target']
 
     stop_reason = model.fit(data, target)
     model.summary()
