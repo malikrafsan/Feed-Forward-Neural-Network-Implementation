@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     stop_reason = model.fit(data, target)
     model.summary()
-    print("Expected final weights:", model_config['expect']["final_weights"])
+    print("Expected final weights:", model_config['expect'].get("final_weights"))
 
     if (stop_reason == StopReason.MAX_ITERATIONS):
         print('Stop reason: max_iterations')
