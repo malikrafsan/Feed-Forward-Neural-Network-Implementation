@@ -19,20 +19,26 @@ if __name__ == '__main__':
     model = model_factory.create()
     model.summary()
 
-    # data = [[3.0, 1.0],
-    #         [1.0, 2.0]]
+    data = [
+            [0.0, 0.0],
+            [0.0, 0.1],
+		[1.0, 0.0],
+		[1.0, 1.0]
+        ]
 
-    data = [[0.0]]
+    # data = [[0.0]]
 
-    # target = [
-    #     [2.0,  0.3, -1.9],
-    #     [1.3, -0.7,  0.1]
-    # ]
     target = [
-        [0.0, 1.0]
-    ]
+            [0.1, 1.0],
+            [1.0, 0.0],
+		[1.0, 1.0],
+		[0.0, 0.0]
+        ]
+    # target = [
+    #     [0.0, 1.0]
+    # ]
 
-    stop_reason = model.fit(data, target, max_iterations=1000, learning_rate=0.01, batch_size=1, error_threshold=0.25)
+    stop_reason = model.fit(data, target)
     model.summary()
     print(stop_reason)
 

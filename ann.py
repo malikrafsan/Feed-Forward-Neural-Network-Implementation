@@ -147,10 +147,19 @@ class Layer(object):
             self.neurons[i].update_weights(batch_size)
 
 class Model(object):
-    def __init__(self, layers: list[Layer] = None) -> None:
+    def __init__(self, layers: list[Layer] = None,
+        learning_rate: float = 0.1,
+        batch_size: int = 10,
+        max_iterations: int = 100,
+        error_threshold: float = 0.1,
+    ) -> None:
         self.layers = layers
         if layers is None:
             self.layers: list[Layer] = []
+        self.learning_rate = learning_rate
+        self.batch_size = batch_size
+        self.max_iteration = max_iterations
+        self.error_threshold = error_threshold
 
     def add(self, layer: Layer) -> None:
         if self.layers:
@@ -162,6 +171,10 @@ class Model(object):
 
     def summary(self):
         print(f'Model with {self.get_params_count()} parameters')
+        print(f'Learning rate={self.learning_rate}')
+        print(f'Batch size={self.batch_size}')
+        print(f'Max iteration={self.max_iteration}')
+        print(f'Error threshold={self.error_threshold}')
         for layer in self.layers:
             print(layer)
 
@@ -274,27 +287,23 @@ class Model(object):
         self, 
         inputs: list[list[float]], 
         expected: list[list[float]],
-        learning_rate: float = 0.1,
-        batch_size: int = 10,
-        max_iterations: int = 100,
-        error_threshold: float = 0.1,
     ):
         num = len(inputs)
-        for i in range(max_iterations):
+        for i in range(self.max_iteration):
             permut = np.random.permutation(num)
-            for j in range(0, num, batch_size):
-                bound = min(j + batch_size, num)
+            for j in range(0, num, self.batch_size):
+                bound = min(j + self.batch_size, num)
                 batch_indices = permut[j:bound]
 
                 cur_inputs = [inputs[i] for i in batch_indices]
                 cur_expected = [expected[i] for i in batch_indices]
 
-                self.multi_propagates(cur_inputs, cur_expected, learning_rate)
-                self.update_weights(batch_size)
+                self.multi_propagates(cur_inputs, cur_expected, self.learning_rate)
+                self.update_weights(self.batch_size)
                 self.reset_delta_weights()
             total_err = self.calc_total_err(inputs, expected)
             print(f'Iteration {i+1}: {total_err}')
-            if total_err < error_threshold:
+            if total_err < self.error_threshold:
                 return StopReason.CONVERGENCE
         return StopReason.MAX_ITERATIONS
 
