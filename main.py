@@ -1,4 +1,7 @@
 from model_factory import ModelFactory
+from json_parser import JsonParser
+from model_types import ModelConfig
+from ann import StopReason
 import sys
 
 from sklearn import datasets
@@ -11,31 +14,28 @@ y = iris.target
 
 if __name__ == '__main__':
     if (len(sys.argv) > 1):
-        model_name = sys.argv[1]
+        json_path = sys.argv[1]
     else:
-        model_name = 'model1'
+        json_path = 'model1.json'
 
-    model_factory = ModelFactory(model_name)
-    model = model_factory.create()
+    model_config: ModelConfig = JsonParser().parse_model_config(json_path)
+    model = ModelFactory().build(model_config)
+
     model.summary()
 
-    # data = [[3.0, 1.0],
-    #         [1.0, 2.0]]
+    data = model_config['case']['input']
+    target = model_config['case']['target']
 
-    data = [[0.0]]
-
-    # target = [
-    #     [2.0,  0.3, -1.9],
-    #     [1.3, -0.7,  0.1]
-    # ]
-    target = [
-        [0.0, 1.0]
-    ]
-
-    stop_reason = model.fit(data, target, max_iterations=1000, learning_rate=0.01, batch_size=1, error_threshold=0.25)
+    stop_reason = model.fit(data, target)
     model.summary()
-    print(stop_reason)
+    print("Expected final weights:", model_config['expect']["final_weights"])
 
+    if (stop_reason == StopReason.MAX_ITERATIONS):
+        print('Stop reason: max_iterations')
+    elif (stop_reason == StopReason.CONVERGENCE):
+        print('Stop reason: convergence')
+    
+    print("Expected stop reason: ", model_config['expect']['stopped_by'])
     # trained = model(data)
     # print(trained)
 
