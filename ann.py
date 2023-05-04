@@ -100,7 +100,7 @@ class Layer(object):
 
     def __repr__(self):
         activation_name = self.activation.__name__
-        weights = self.get_weights()
+        weights = self.get_transformed_weights()
         param_count = self.get_params_count()
 
         return ''.join([
@@ -145,6 +145,16 @@ class Layer(object):
     def update_weights(self, batch_size: int):
         for i in range(len(self.neurons)):
             self.neurons[i].update_weights(batch_size)
+
+        
+    def get_transformed_weights(self):
+        weights = self.get_weights()
+        bias = [b[-1] for b in weights]
+        weights = [w[:-1] for w in weights]
+        weights = [list(x) for x in zip(*weights)]
+        transformed_weights = [bias]
+        transformed_weights.extend(weights)
+        return transformed_weights
 
 class Model(object):
     def __init__(self, layers: list[Layer] = None,
@@ -290,7 +300,7 @@ class Model(object):
     ):
         num = len(inputs)
         for i in range(self.max_iteration):
-            permut = np.random.permutation(num)
+            permut = [i for i in range(num)] #np.random.permutation(num)
             for j in range(0, num, self.batch_size):
                 bound = min(j + self.batch_size, num)
                 batch_indices = permut[j:bound]
@@ -306,6 +316,7 @@ class Model(object):
             if total_err < self.error_threshold:
                 return StopReason.CONVERGENCE
         return StopReason.MAX_ITERATIONS
+
 
 
     # def fit(

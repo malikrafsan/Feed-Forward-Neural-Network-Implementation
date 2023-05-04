@@ -1,6 +1,7 @@
 from model_factory import ModelFactory
 from json_parser import JsonParser
 from model_types import ModelConfig
+from ann import StopReason
 import sys
 
 from sklearn import datasets
@@ -27,8 +28,14 @@ if __name__ == '__main__':
 
     stop_reason = model.fit(data, target)
     model.summary()
-    print(stop_reason)
+    print("Expected final weights:", model_config['expect']["final_weights"])
 
+    if (stop_reason == StopReason.MAX_ITERATIONS):
+        print('Stop reason: max_iterations')
+    elif (stop_reason == StopReason.CONVERGENCE):
+        print('Stop reason: convergence')
+    
+    print("Expected stop reason: ", model_config['expect']['stopped_by'])
     # trained = model(data)
     # print(trained)
 

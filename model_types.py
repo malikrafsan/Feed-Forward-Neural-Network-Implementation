@@ -23,6 +23,7 @@ class Case(TypedDict):
 
 class Expect(TypedDict):
     stopped_by: str
+    final_weights: list[list[list[float]]]
 
 
 class ModelConfig(TypedDict):
