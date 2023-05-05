@@ -101,6 +101,8 @@ class Layer(object):
         out = [neuron(inputs) for neuron in self.neurons]
         if self.activation is activations.softmax: # TODO: RECHECK
             out = (out / sum(out)).tolist()
+        for i in range(len(out)):
+            self.neurons[i].value = out[i]
         return out
 
     def __repr__(self):
@@ -136,10 +138,12 @@ class Layer(object):
 
                 if (self.activation_type == 'softmax'):
                     neuron.reset_delta_err()
+                    print("x.value", [x.value for x in self.neurons])
                     cur_out = neuron.value
                     for k in range(len(self.neurons)):
                         other_out = self.neurons[k].value
                         delta_val = self.delta_func(cur_out, other_out, j, k) * expected[k]
+                        print("delta_val",delta_val)
                         neuron.delta_err += delta_val
                 else:
                     neuron.delta_err = self.delta_func(expected[j], neuron.value)
@@ -265,7 +269,8 @@ class Model(object):
             return self.layers[idx-1].get_values() + [bias]
 
     def propagate(self, inputs: list[float], expected: list[float], learning_rate: float):
-        _ = self.single_predict(inputs)
+        res = self.single_predict(inputs)
+        print("res",res)
 
         num = len(self.layers)
         for i in range(num-1, -1, -1):
@@ -332,6 +337,7 @@ class Model(object):
 
                 self.multi_propagates(cur_inputs, cur_expected, self.learning_rate)
                 self.update_weights()
+                print("delta weight", [[x1.delta_weights for x1 in x.neurons] for x in self.layers])
                 self.reset_delta_weights()
             total_err = self.calc_total_err(inputs, expected)
             print(f'Iteration {i+1}: {total_err}')
