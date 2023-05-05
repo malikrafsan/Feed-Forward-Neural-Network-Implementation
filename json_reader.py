@@ -8,8 +8,9 @@ class JsonReader:
     def read(self):
         with open(self.filename, 'r') as f:
             self.data = json.load(f)
+        return self.data
 
-    def get(self, index: int):
+    def get(self, index: int| str):
         return self.data[index]
 
     def length(self):

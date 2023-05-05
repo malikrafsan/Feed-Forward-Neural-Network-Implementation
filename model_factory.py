@@ -1,18 +1,13 @@
 from json_reader import JsonReader
 from ann import Model, Layer
+from model_types import ModelConfig
+import pickle
 
 class ModelFactory:
-    def __init__(self, model_name: str):
-        self.model_name = model_name
-        self.json_reader = JsonReader(f'{model_name}')
-        self.model = None
-
-    def create(self) -> Model:
-        self.json_reader.read()
-        case = self.json_reader.get("case")
-        print(case)
+    def build(self, model_config: ModelConfig) -> Model:
+        case = model_config["case"]
         learning_parameters = case["learning_parameters"]
-        self.model = Model(
+        model = Model(
             learning_rate=learning_parameters["learning_rate"],
             batch_size=learning_parameters["batch_size"],
             max_iterations=learning_parameters["max_iteration"],
@@ -24,11 +19,15 @@ class ModelFactory:
             weights = [list(x) for x in zip(*weights)]
             for j in range(len(weights)):
                 weights[j].append(case["initial_weights"][i][0][j])
-            self.model.add(Layer(
+            model.add(Layer(
                 layer["number_of_neurons"],
                 input_shape=case["model"].get('input_size'),
                 activation=layer['activation_function'],
                 weights=weights,
                 bias=1,
             ))
-        return self.model
+        return model
+    
+    def load(self, path: str) -> Model:
+        with open(path, 'rb') as f:
+            return pickle.load(f)
