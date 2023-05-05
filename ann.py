@@ -8,10 +8,11 @@ import matplotlib.pyplot as plt
 import random
 from enum import Enum
 import pickle
+from numpy import log
 
 class StopReason(Enum):
     MAX_ITERATIONS = 1
-    CONVERGENCE = 2
+    ERROR_THRESHOLD = 2
 
 class Neuron(object):
     def __init__(
@@ -47,9 +48,9 @@ class Neuron(object):
     def reset_delta_weights(self):
         self.delta_weights = [0 for _ in range(len(self.weights))]
     
-    def update_weights(self, batch_size: int):
+    def update_weights(self):
         for i in range(len(self.delta_weights)):
-            self.weights[i] += self.delta_weights[i] / batch_size
+            self.weights[i] += self.delta_weights[i]
 
 class LayerType(Enum):
     OUTPUT = 1
@@ -60,17 +61,20 @@ class Layer(object):
         self,
         neurons: list[Neuron] | int,
         name: str = '',
-        activation: Callable | str = '',
+        activation: str = '',
         weights: list[list[float]] = None,
         bias: float = 1,
         input_shape=0,
     ) -> None:
         self.name = name
-        self.activation = activation
-        if isinstance(activation, str):
-            self.activation: Callable = getattr(activations, activation)
-            self.delta_func: Callable = getattr(deltafuncs, activation)
-            self.delta_coef: Callable = getattr(deltacoef, activation)
+        if not isinstance(activation, str):
+            raise TypeError("activation must be string")
+        
+        self.activation_type = activation
+        self.activation: Callable = getattr(activations, activation)
+        self.delta_func: Callable = getattr(deltafuncs, activation)
+        self.delta_coef: Callable = getattr(deltacoef, activation)
+
         self.neurons = neurons
         if isinstance(neurons, int):
             self.neurons: list[Neuron] = [
@@ -129,7 +133,17 @@ class Layer(object):
         if (type == LayerType.OUTPUT):
             for j in range(len(self.neurons)):
                 neuron = self.neurons[j]
-                neuron.delta_err = self.delta_func(expected[j], neuron.value)
+
+                if (self.activation_type == 'softmax'):
+                    neuron.reset_delta_err()
+                    cur_out = neuron.value
+                    for k in range(len(self.neurons)):
+                        other_out = self.neurons[k].value
+                        delta_val = self.delta_func(cur_out, other_out, j, k) * expected[k]
+                        neuron.delta_err += delta_val
+                else:
+                    neuron.delta_err = self.delta_func(expected[j], neuron.value)
+
                 for k, _ in enumerate(neuron.delta_weights): # TODO: RECHECK
                     neuron.delta_weights[k] += -learning_rate * neuron.delta_err * prev_values[k]
         elif (type == LayerType.HIDDEN):
@@ -143,9 +157,9 @@ class Layer(object):
                 for k in range(len(neuron.delta_weights)):
                     neuron.delta_weights[k] += -learning_rate * neuron.delta_err * prev_values[k]
 
-    def update_weights(self, batch_size: int):
+    def update_weights(self):
         for i in range(len(self.neurons)):
-            self.neurons[i].update_weights(batch_size)
+            self.neurons[i].update_weights()
 
         
     def get_transformed_weights(self):
@@ -155,7 +169,9 @@ class Layer(object):
         weights = [list(x) for x in zip(*weights)]
         transformed_weights = [bias]
         transformed_weights.extend(weights)
-        return transformed_weights
+
+        rounded = [[round(x1, 4) for x1 in x] for x in transformed_weights]
+        return rounded
 
 class Model(object):
     def __init__(self, layers: list[Layer] = None,
@@ -280,18 +296,22 @@ class Model(object):
             self.reset_value()
             self.reset_delta_err()
 
-    def update_weights(self, batch_size: int):
+    def update_weights(self):
         for i in range(len(self.layers)):
             layer = self.layers[i]
-            layer.update_weights(batch_size)
+            layer.update_weights()
 
     def calc_total_err(self, inputs: list[list[float]], expected: list[list[float]]):
         res = self(inputs)
         # print(res)
         total_err = 0
+        flag_softmax = self.layers[-1].activation_type == 'softmax'
         for i in range(len(res)):
+            if (flag_softmax):
+                for j1 in range(len(res[0])):
+                    total_err += -(expected[i][j1] * log(res[i][j1]))
             for j in range(len(res[i])):
-                total_err += (res[i][j] - expected[i][j]) ** 2
+                total_err += 0.5 * (res[i][j] - expected[i][j]) ** 2
         return total_err
 
     def fit(
@@ -311,12 +331,12 @@ class Model(object):
                 cur_expected = [expected[i] for i in batch_indices]
 
                 self.multi_propagates(cur_inputs, cur_expected, self.learning_rate)
-                self.update_weights(self.batch_size)
+                self.update_weights()
                 self.reset_delta_weights()
             total_err = self.calc_total_err(inputs, expected)
             print(f'Iteration {i+1}: {total_err}')
             if total_err < self.error_threshold:
-                return StopReason.CONVERGENCE
+                return StopReason.ERROR_THRESHOLD
         return StopReason.MAX_ITERATIONS
 
     def save(self, path: str):

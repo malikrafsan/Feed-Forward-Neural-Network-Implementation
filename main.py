@@ -43,8 +43,8 @@ if __name__ == '__main__':
     print("===================================================")
     if (stop_reason == StopReason.MAX_ITERATIONS):
         print('Stop reason: max_iterations')
-    elif (stop_reason == StopReason.CONVERGENCE):
-        print('Stop reason: convergence')
+    elif (stop_reason == StopReason.ERROR_THRESHOLD):
+        print('Stop reason: error_threshold')
 
     print("Expected stop reason: ", model_config['expect']['stopped_by'])
 
