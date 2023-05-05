@@ -29,10 +29,12 @@ class Neuron(object):
         self.value = 0
         self.delta_err = 0
         self.delta_weights = [0 for _ in range(len(weights))]
+        self.relu_flag = False
 
     def __call__(self, x: list[float]):
         # feed forward
         val = np.dot(x, self.weights)
+        self.relu_flag = val < 0
         self.value = self.activation(val)
         return self.value
 
@@ -143,6 +145,8 @@ class Layer(object):
                         other_out = self.neurons[k].value
                         delta_val = self.delta_func(cur_out, other_out, j, k) * expected[k]
                         neuron.delta_err += delta_val
+                elif (self.activation_type == 'relu'):
+                    neuron.delta_err = self.delta_func(expected[j], neuron.value, neuron.relu_flag)
                 else:
                     neuron.delta_err = self.delta_func(expected[j], neuron.value)
 
@@ -155,7 +159,12 @@ class Layer(object):
                 for k in range(len(next_neurons)):
                     next_neuron = next_neurons[k]
                     sum += next_neuron.delta_err * next_neuron.weights[j]
-                neuron.delta_err = self.delta_coef(neuron.value) * sum
+                
+                if (self.activation_type == 'relu'):
+                    neuron.delta_err = self.delta_coef(neuron.value, neuron.relu_flag) * sum
+                else:
+                    neuron.delta_err = self.delta_coef(neuron.value) * sum
+
                 for k in range(len(neuron.delta_weights)):
                     neuron.delta_weights[k] += -learning_rate * neuron.delta_err * prev_values[k]
 
