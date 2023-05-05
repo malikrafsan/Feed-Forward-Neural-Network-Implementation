@@ -300,7 +300,8 @@ class Model(object):
     ):
         num = len(inputs)
         for i in range(self.max_iteration):
-            permut = [i for i in range(num)] #np.random.permutation(num)
+            # permut = [i for i in range(num)]
+            permut = np.random.permutation(num)
             for j in range(0, num, self.batch_size):
                 bound = min(j + self.batch_size, num)
                 batch_indices = permut[j:bound]
