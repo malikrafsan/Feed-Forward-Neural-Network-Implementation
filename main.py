@@ -48,6 +48,9 @@ if __name__ == '__main__':
 
     print("Expected stop reason: ", model_config['expect']['stopped_by'])
 
+    print("===================================================")
+    model.draw()
+
     if (args.save is not None):
         model.save(args.save)
 
