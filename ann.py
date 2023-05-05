@@ -138,12 +138,10 @@ class Layer(object):
 
                 if (self.activation_type == 'softmax'):
                     neuron.reset_delta_err()
-                    print("x.value", [x.value for x in self.neurons])
                     cur_out = neuron.value
                     for k in range(len(self.neurons)):
                         other_out = self.neurons[k].value
                         delta_val = self.delta_func(cur_out, other_out, j, k) * expected[k]
-                        print("delta_val",delta_val)
                         neuron.delta_err += delta_val
                 else:
                     neuron.delta_err = self.delta_func(expected[j], neuron.value)
@@ -269,8 +267,7 @@ class Model(object):
             return self.layers[idx-1].get_values() + [bias]
 
     def propagate(self, inputs: list[float], expected: list[float], learning_rate: float):
-        res = self.single_predict(inputs)
-        print("res",res)
+        _ = self.single_predict(inputs)
 
         num = len(self.layers)
         for i in range(num-1, -1, -1):
@@ -308,7 +305,7 @@ class Model(object):
 
     def calc_total_err(self, inputs: list[list[float]], expected: list[list[float]]):
         res = self(inputs)
-        # print(res)
+
         total_err = 0
         flag_softmax = self.layers[-1].activation_type == 'softmax'
         for i in range(len(res)):
@@ -337,7 +334,6 @@ class Model(object):
 
                 self.multi_propagates(cur_inputs, cur_expected, self.learning_rate)
                 self.update_weights()
-                print("delta weight", [[x1.delta_weights for x1 in x.neurons] for x in self.layers])
                 self.reset_delta_weights()
             total_err = self.calc_total_err(inputs, expected)
             print(f'Iteration {i+1}: {total_err}')
@@ -348,61 +344,6 @@ class Model(object):
     def save(self, path: str):
         with open(path, 'wb') as f:
             pickle.dump(self, f)
-
-
-    # def fit(
-    #     self, 
-    #     inputs: list[list[float]], 
-    #     expected: list[list[float]],
-    #     learning_rate: float = 0.1,
-    #     batch_size: int = 10,
-    #     max_iterations: int = 100,
-    #     error_threshold: float = 0.1,
-    # ):
-    #     num = len(inputs)
-    #     for i in range(max_iterations):
-    #         # pick random batch
-    #         batch_indices = random.sample(range(num), batch_size)
-    #         batch_inputs = [inputs[i] for i in batch_indices]
-    #         batch_expected = [expected[i] for i in batch_indices]
-
-    #         # feed forward
-    #         outputs = self(batch_inputs)
-
-    #         # calculate error
-    #         errors = []
-    #         for j, output in enumerate(outputs):
-    #             error = np.array(output) - np.array(batch_expected[j])
-    #             errors.append(error)
-
-    #         # backpropagation
-    #         for j, layer in enumerate(self.layers[::-1]):
-    #             # calculate gradient
-    #             gradient = np.array([np.array(error) * np.array(layer.neurons[i].value) for i, error in enumerate(errors)]).T
-
-    #             # calculate delta
-    #             delta = np.array([learning_rate * np.array(error) * np.array(layer.neurons[i].value) for i, error in enumerate(errors)]).T
-
-    #             # update weights
-    #             layer.neurons = [
-    #                 Neuron(
-    #                     layer.activation,
-    #                     layer.neurons[i].weights - delta[i],
-    #                 )
-    #                 for i in range(len(layer.neurons))
-    #             ]
-
-    #             # calculate error for next layer
-    #             if j < len(self.layers) - 1:
-    #                 errors = np.array([np.dot(layer.get_weights(), error) for error in errors]).T
-
-    #         # calculate total error
-    #         total_error = sum([sum([abs(e) for e in error]) for error in errors])
-    #         if total_error < error_threshold:
-    #             break
-
-    #         if i % 100 == 0:
-    #             print(f'Iteration {i}: {total_error}')
 
 
 if __name__ == '__main__':
