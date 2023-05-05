@@ -7,6 +7,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import random
 from enum import Enum
+import pickle
 
 class StopReason(Enum):
     MAX_ITERATIONS = 1
@@ -318,6 +319,9 @@ class Model(object):
                 return StopReason.CONVERGENCE
         return StopReason.MAX_ITERATIONS
 
+    def save(self, path: str):
+        with open(path, 'wb') as f:
+            pickle.dump(self, f)
 
 
     # def fit(
